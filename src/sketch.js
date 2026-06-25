@@ -30,30 +30,69 @@ function setup(){
   earth = (typeof InstrumentEarth === 'function') ? new InstrumentEarth(earthAssets) : new EarthCultures();
 }
 function draw(){
-  background(1,1,8); let t=millis()/1000; travel=lerp(travel,targetTravel,.045);
-  document.getElementById('progress').style.width=(travel*100).toFixed(1)+'%';
-  let stage=floor(constrain(travel*5,0,4.999)); if(!(earth && stage === 4)){
-  screenText(labels[stage]);
-}
-  orbitControlLight(); rotateX(rx); rotateY(ry);
-  let z=map(travel,0,1,900,-120); scale(map(travel,0,1,.55,1.25));
-  push(); translate(0,0,z); drawStarfield(t); pop();
-  let a0=1-softStep(.14,.28,travel); if(a0>0){push(); scale(1+travel*5); tintAlpha(a0); dust.draw(t,1+travel*7); pop();}
-  let a1=softStep(.12,.32,travel)*(1-softStep(.48,.60,travel)); if(a1>0){push(); scale(map(travel,.12,.60,1.8,.8)); dust.draw(t,.85); drawGalaxies(t,a1); pop();}
-  let a2=softStep(.42,.60,travel)*(1-softStep(.70,.82,travel)); if(a2>0){push(); scale(map(travel,.42,.82,1.5,.75)); drawMilkyWay(t,a2); pop();}
-  let a3=softStep(.62,.78,travel)*(1-softStep(.90,.98,travel));
-  if(a3>0){
-    const focusEarth=softStep(.76,.92,travel);
+  background(1,1,8);
+
+  const t = millis() / 1000;
+  travel = lerp(travel, targetTravel, .055);
+
+  document.getElementById('progress').style.width = (travel * 100).toFixed(1) + '%';
+
+  const stage = floor(constrain(travel * 5, 0, 4.999));
+
+  if(!(earth && stage === 4)){
+    screenText(labels[stage]);
+  }
+
+  orbitControlLight();
+
+  rotateX(rx);
+  rotateY(ry);
+
+  const z = map(travel, 0, 1, 900, -120);
+  scale(map(travel, 0, 1, .55, 1.25));
+
+  push();
+  translate(0, 0, z);
+  drawStarfield(t);
+  pop();
+
+  const a0 = 1 - softStep(.12, .22, travel);
+  if(a0 > .04){
     push();
-    // cuando focusEarth crece, el sistema solar centra la Tierra real en órbita
+    scale(1 + travel * 5);
+    dust.draw(t, 1 + travel * 7);
+    pop();
+  }
+
+  const a1 = softStep(.14, .26, travel) * (1 - softStep(.42, .52, travel));
+  if(a1 > .04){
+    push();
+    scale(map(travel, .12, .56, 1.8, .8));
+    dust.draw(t, .85);
+    drawGalaxies(t, a1);
+    pop();
+  }
+
+  const a2 = softStep(.40, .52, travel) * (1 - softStep(.66, .76, travel));
+  if(a2 > .04){
+    push();
+    scale(map(travel, .40, .76, 1.5, .75));
+    drawMilkyWay(t, a2);
+    pop();
+  }
+
+  const a3 = softStep(.62, .72, travel) * (1 - softStep(.84, .90, travel));
+  if(a3 > .04){
+    const focusEarth = softStep(.74, .88, travel);
+    push();
     system.draw(t, focusEarth);
     pop();
   }
-  let a4=softStep(.86,.98,travel);
-  if(a4>0){
+
+  const a4 = softStep(.86, .94, travel);
+  if(a4 > .04){
     push();
-    // La Tierra entra ya centrada: reemplaza visualmente al planeta orbitante, no sale del sol.
-    scale(map(a4,0,1,.35,1.65));
+    scale(map(a4, 0, 1, .35, 1.65));
     earth.draw(t, a4);
     pop();
   }
