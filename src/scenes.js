@@ -5,6 +5,8 @@ class CosmicDust{
     blendMode(BLEND);
   }
 }
+
+// Se conserva para próximas integraciones, pero YA NO se dibuja encima del sistema solar.
 class NetworkSun{
   constructor(n=360){this.a=[];this.b=[];for(let i=0;i<n;i++){this.a.push(randPointSphere(220));this.b.push(randPointSphere(252));}}
   draw(t){push(); rotateY(t*.22); rotateX(t*.13); noStroke(); ambientMaterial(125,55,8); sphere(130+sin(t*2)*9);
@@ -13,13 +15,158 @@ class NetworkSun{
     for(let i=0;i<this.b.length;i+=2){let p=this.b[i].copy();p.setMag(225+20*sin(t*3+i)); stroke(255,55,45,55); point(p.x,p.y,p.z)} blendMode(BLEND); pop();
   }
 }
+
+// =====================================================
+// SISTEMA SOLAR — port fiel de alexClase2v2.pde
+// Reemplaza al sol grande: sol en espiral + órbitas elípticas + trails.
+// Optimizado para web: trails más cortos y estrellas precomputadas.
+// =====================================================
 class SpiralSystem{
-  constructor(){this.planets=[];for(let i=0;i<7;i++)this.planets.push({r:70+i*42,s:random(.15,.6),z:random(-25,25),sz:5+i*1.8,c:[random(80,255),random(90,210),random(120,255)]});}
-  draw(t){push(); rotateX(1.12); blendMode(ADD); stroke(255,180,90,45); noFill(); for(let r=60;r<370;r+=42){beginShape(); for(let a=0;a<TWO_PI;a+=.06) vertex(cos(a)*r,sin(a)*r,0); endShape();}
-    for(let p of this.planets){let a=t*p.s+p.r*.013; push(); translate(cos(a)*p.r,sin(a)*p.r,p.z); noStroke(); fill(...p.c,210); sphere(p.sz); pop();}
-    blendMode(BLEND); pop();
+  constructor(){
+    this.t = 0;
+    this.sunSize = 90;
+    this.a = [120, 175, 245, 320, 445, 585, 725, 860];
+    this.b = [100, 150, 225, 285, 410, 535, 675, 810];
+    this.sizes = [0.03, 0.07, 0.08, 0.04, 0.22, 0.18, 0.12, 0.11];
+    this.speeds = [4.0, 3.2, 2.4, 1.9, 1.2, 0.9, 0.6, 0.4];
+    this.cols = [
+      [180,180,180],
+      [255,180,80],
+      [0,120,255],
+      [255,80,50],
+      [255,200,120],
+      [255,220,160],
+      [120,220,255],
+      [80,120,255]
+    ];
+    this.trailSol = [];
+    this.planetTrails = Array.from({length:8},()=>[]);
+    this.maxSunTrail = 420;
+    this.maxPlanetTrail = 260;
+    this.stars = [];
+    randomSeed(2);
+    for(let i=0;i<800;i++){
+      this.stars.push({
+        x:random(-3600,3600), y:random(-2600,2600), z:random(-3600,3600),
+        a:random(35,220), w:random(1,2.4)
+      });
+    }
+    randomSeed();
+  }
+
+  draw(externalT){
+    this.t += min(deltaTime || 16.6, 33) * 0.00055;
+    const tt = this.t;
+
+    push();
+    scale(0.62);
+    rotateX(0.43);
+    rotateY(externalT*0.05);
+
+    this.drawStars();
+
+    // SOL ESPIRAL: misma lógica del PDE, pero centrada para web.
+    const sunX = cos(tt) * 120;
+    const sunZ = sin(tt) * 120;
+    const sunY = -tt * 95;
+
+    // Cámara sigue al sol, como en el PDE: translate(-sunX,-sunY,-sunZ).
+    translate(-sunX, -sunY, -sunZ);
+
+    this.trailSol.push(createVector(sunX,sunY,sunZ));
+    if(this.trailSol.length > this.maxSunTrail) this.trailSol.shift();
+    this.drawTrailSimple(this.trailSol, [255,200,80], 4.2);
+
+    // SOL: ya no es el sol-red enorme. Es el sol claro del sistema solar de clase.
+    push();
+    translate(sunX,sunY,sunZ);
+    rotateY(tt*2);
+    noStroke();
+    fill(255,180,0,240);
+    sphere(this.sunSize, 28, 18);
+    // pequeño halo sin ocupar toda la escena
+    blendMode(ADD);
+    fill(255,130,20,35); sphere(this.sunSize*1.45, 20, 12);
+    fill(255,220,90,20); sphere(this.sunSize*2.1, 18, 10);
+    blendMode(BLEND);
+    pop();
+
+    for(let i=0;i<8;i++) this.drawPlanet(i, sunX, sunY, sunZ, tt);
+    pop();
+  }
+
+  drawPlanet(i, sunX, sunY, sunZ, tt){
+    const angle = tt * this.speeds[i];
+    const x = cos(angle) * this.a[i];
+    const z = sin(angle) * this.b[i];
+    const y = sin(angle*2+i) * 15;
+    const px = sunX+x, py = sunY+y, pz = sunZ+z;
+
+    this.planetTrails[i].push(createVector(px,py,pz));
+    if(this.planetTrails[i].length > this.maxPlanetTrail) this.planetTrails[i].shift();
+    this.drawPlanetTrail(i);
+
+    push();
+    translate(px,py,pz);
+    rotateY(frameCount*0.02);
+    noStroke();
+    const c=this.cols[i];
+    fill(c[0],c[1],c[2],235);
+    sphere(max(3.5,this.sunSize*this.sizes[i]), 18, 12);
+    if(i===5 || i===6 || i===7) this.drawRing(max(3.5,this.sunSize*this.sizes[i]));
+    pop();
+  }
+
+  drawRing(r){
+    push();
+    rotateX(radians(70));
+    noFill();
+    stroke(210,210,210,120);
+    strokeWeight(1.5);
+    ellipse(0,0,r*5,r*2.5);
+    ellipse(0,0,r*6.5,r*3.2);
+    pop();
+  }
+
+  drawPlanetTrail(i){
+    const tr=this.planetTrails[i];
+    const c=this.cols[i];
+    for(let j=max(1,tr.length-this.maxPlanetTrail);j<tr.length;j++){
+      const p1=tr[j-1], p2=tr[j];
+      const amt=j/tr.length;
+      stroke(
+        lerp(255,c[0],amt),
+        lerp(255,c[1],amt),
+        lerp(255,c[2],amt),
+        map(j,0,tr.length,12,210)
+      );
+      strokeWeight(1.15);
+      line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);
+    }
+  }
+
+  drawTrailSimple(tr,c,w){
+    for(let i=1;i<tr.length;i++){
+      const p1=tr[i-1], p2=tr[i];
+      stroke(c[0],c[1],c[2],map(i,0,tr.length,0,210));
+      strokeWeight(w);
+      line(p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);
+    }
+  }
+
+  drawStars(){
+    push();
+    blendMode(ADD);
+    for(const s of this.stars){
+      stroke(255,s.a);
+      strokeWeight(s.w);
+      point(s.x,s.y,s.z);
+    }
+    blendMode(BLEND);
+    pop();
   }
 }
+
 class EarthCultures{
   constructor(){this.nodes=[]; let names=['África','Asia','Europa','América','Oceanía','Polos','Mediterráneo','Sinaí','Ríos','Selvas','Desiertos','Ciudades']; for(let i=0;i<names.length;i++){let p=randPointSphere(154); this.nodes.push({p,name:names[i]});}}
   draw(t){push(); rotateY(t*.12); rotateX(-.25+sin(t*.5)*.08); noStroke(); fill(20,55,85); sphere(150); blendMode(ADD); fill(35,180,120,70); sphere(153); fill(255,255,255,15); sphere(164);
