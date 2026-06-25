@@ -54,9 +54,10 @@ class SpiralSystem{
     randomSeed();
   }
 
-  draw(externalT){
+  draw(externalT, focusEarth=0){
     this.t += min(deltaTime || 16.6, 33) * 0.00055;
     const tt = this.t;
+    focusEarth = constrain(focusEarth,0,1);
 
     push();
     scale(0.62);
@@ -70,8 +71,19 @@ class SpiralSystem{
     const sunZ = sin(tt) * 120;
     const sunY = -tt * 95;
 
-    // Cámara sigue al sol, como en el PDE: translate(-sunX,-sunY,-sunZ).
-    translate(-sunX, -sunY, -sunZ);
+    // Cámara narrativa: al principio sigue el sol como en el PDE.
+    // En el final del tramo, el centro del zoom deja de ser el sol
+    // y pasa a ser la Tierra real orbitando alrededor del sol.
+    const earth = this.planetPosition(2, sunX, sunY, sunZ, tt);
+    const targetX = lerp(sunX, earth.x, focusEarth);
+    const targetY = lerp(sunY, earth.y, focusEarth);
+    const targetZ = lerp(sunZ, earth.z, focusEarth);
+    translate(-targetX, -targetY, -targetZ);
+
+    // Acercamiento progresivo hacia la Tierra: no nace del sol,
+    // la cámara viaja hasta el planeta azul que ya estaba orbitando.
+    const zoomToEarth = lerp(1.0, 4.2, focusEarth);
+    scale(zoomToEarth);
 
     this.trailSol.push(createVector(sunX,sunY,sunZ));
     if(this.trailSol.length > this.maxSunTrail) this.trailSol.shift();
@@ -95,12 +107,17 @@ class SpiralSystem{
     pop();
   }
 
-  drawPlanet(i, sunX, sunY, sunZ, tt){
+  planetPosition(i, sunX, sunY, sunZ, tt){
     const angle = tt * this.speeds[i];
     const x = cos(angle) * this.a[i];
     const z = sin(angle) * this.b[i];
     const y = sin(angle*2+i) * 15;
-    const px = sunX+x, py = sunY+y, pz = sunZ+z;
+    return createVector(sunX+x, sunY+y, sunZ+z);
+  }
+
+  drawPlanet(i, sunX, sunY, sunZ, tt){
+    const pos = this.planetPosition(i, sunX, sunY, sunZ, tt);
+    const px = pos.x, py = pos.y, pz = pos.z;
 
     this.planetTrails[i].push(createVector(px,py,pz));
     if(this.planetTrails[i].length > this.maxPlanetTrail) this.planetTrails[i].shift();
@@ -112,7 +129,13 @@ class SpiralSystem{
     noStroke();
     const c=this.cols[i];
     fill(c[0],c[1],c[2],235);
-    sphere(max(3.5,this.sunSize*this.sizes[i]), 18, 12);
+    const pr = max(3.5,this.sunSize*this.sizes[i]);
+    sphere(pr, 18, 12);
+    if(i===2){
+      blendMode(ADD);
+      fill(80,180,255,38); sphere(pr*2.8,14,8);
+      blendMode(BLEND);
+    }
     if(i===5 || i===6 || i===7) this.drawRing(max(3.5,this.sunSize*this.sizes[i]));
     pop();
   }
