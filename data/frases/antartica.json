@@ -1,0 +1,35 @@
+{
+  "metadata": {
+    "proyecto": "TELEPATA",
+    "descripcion": "Primer dataset comparativo por país: paralelo Kohanim/Biblia, frase de origen, rol de sacerdotisa/mujer ritual, escritura y formato.",
+    "advertencia": "Dataset heurístico y comparativo. Muchos países modernos contienen múltiples pueblos y tradiciones; cuando no existe una fuente escrita hacia 3000 a.C., se usa la tradición ancestral más cercana o un proxy regional.",
+    "origen_paises": "custom.geo.json",
+    "cantidad_resultados": 1,
+    "continente": "Antarctica"
+  },
+  "resultados": [
+    {
+      "pais": "Antarctica",
+      "admin": "Antarctica",
+      "iso_a2": "AQ",
+      "iso_a3": "ATA",
+      "continente": "Antarctica",
+      "subregion": "Antarctica",
+      "region_un": "Antarctica",
+      "resultado": {
+        "frase": "Al principio, la memoria del mundo se conservaba en la voz, el rito y el linaje.",
+        "frase_clave": "Al principio, la memoria del mundo se conservaba en la voz, el rito y el linaje.",
+        "autor": "Autoría colectiva ancestral",
+        "año": "prehistórico / anterior a la escritura local",
+        "paralelo_kohanim": "Ancianos/as rituales, chamanes o guardianes de memoria local",
+        "paralelo_biblia": "Corpus oral, mitos de origen y memoria genealógica",
+        "tradicion_base": "Tradición regional oral ancestral",
+        "frase_clave_rol_sacerdotisa": "La mujer podía funcionar como mediadora ritual, sanadora, cantora, partera o guardiana de continuidad familiar, según la sociedad.",
+        "rol_mujer_sacerdocio": "variable / generalmente oral-comunitario",
+        "tipo_de_escritura": "oralidad",
+        "formato": "canto, relato, ceremonia, memoria corporal",
+        "certeza": "baja: proxy regional"
+      }
+    }
+  ]
+}
