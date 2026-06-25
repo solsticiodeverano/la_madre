@@ -209,20 +209,28 @@ InstrumentEarth.prototype.activateAudio = function(){
 InstrumentEarth.prototype.changeZoneSound = function(zone){
   if(!this.audioReady || !this.mainOn) return;
 
-  const s = this.mainSoundFor(zone);
+  const incoming = this.mainSoundFor(zone);
+  if(!incoming || incoming === this.currentMain) return;
 
-  if(s === this.currentMain) return;
+  const outgoing = this.currentMain;
+  const dur = 3.0; // segundos, como tu PDE viejo
 
-  if(this.currentMain){
-    this.currentMain.stop();
+  incoming.stop();
+  incoming.setVolume(0);
+  incoming.loop();
+
+  const targetVol = this.zoneVolumes[zone] || .45;
+
+  incoming.setVolume(targetVol, dur);
+
+  if(outgoing){
+    outgoing.setVolume(0, dur);
+    setTimeout(()=>{
+      outgoing.stop();
+    }, dur * 1000 + 80);
   }
 
-  this.currentMain = s;
-
-  if(this.currentMain){
-    this.currentMain.setVolume(this.zoneVolumes[zone] || .4);
-    this.currentMain.loop();
-  }
+  this.currentMain = incoming;
 };
 
 InstrumentEarth.prototype.mainSoundFor = function(zone){
@@ -314,8 +322,8 @@ InstrumentEarth.prototype.handleKey = function(k){
     if(!this.mainOn && this.currentMain){
       this.currentMain.stop();
     }else{
-      this.changeZoneSound(this.zone);
-    }
+this.currentMain = null;
+this.changeZoneSound(this.zone);    }
   }
 
   if(k === '4'){
