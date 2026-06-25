@@ -1,0 +1,284 @@
+import java.util.ArrayList;
+
+ArrayList<PVector> points;     // red principal
+ArrayList<PVector> redPoints;  // red roja interna
+
+int NUM = 1200;
+
+float[] seedX, seedY, seedZ;
+float[] seedRX, seedRY, seedRZ;
+
+float rotX = 0;
+float rotY = 0;
+
+float zoom = 1.0;
+
+// radios
+float CORE_R = 224;
+float FIELD_R = 220;
+float RED_R = 250;
+
+void setup() {
+  size(900, 900, P3D);
+  smooth(8);
+
+  points = new ArrayList<PVector>();
+  redPoints = new ArrayList<PVector>();
+
+  seedX = new float[NUM];
+  seedY = new float[NUM];
+  seedZ = new float[NUM];
+
+  seedRX = new float[NUM];
+  seedRY = new float[NUM];
+  seedRZ = new float[NUM];
+
+  for (int i = 0; i < NUM; i++) {
+
+    float theta = random(TWO_PI);
+    float phi = acos(random(-1, 1));
+
+    // red externa
+    seedX[i] = sin(phi) * cos(theta);
+    seedY[i] = sin(phi) * sin(theta);
+    seedZ[i] = cos(phi);
+
+    // red interna roja
+    seedRX[i] = sin(phi) * cos(theta + random(-0.2, 0.2));
+    seedRY[i] = sin(phi) * sin(theta + random(-0.2, 0.2));
+    seedRZ[i] = cos(phi);
+
+    points.add(new PVector());
+    redPoints.add(new PVector());
+  }
+}
+
+void draw() {
+  background(0);
+
+  drawStars();
+
+  translate(width/2, height/2);
+  scale(zoom);
+
+  rotateX(rotX);
+  rotateY(rotY);
+
+  rotX += 0.002;
+  rotY += 0.003;
+
+  float pulse = sin(frameCount * 0.03);
+  float energy = map(pulse, -1, 1, 0, 1);
+
+  updatePoints(energy);
+  updateRedPoints(energy);
+
+  // =========================
+  // NÚCLEO SOLAR
+  // =========================
+  hint(ENABLE_DEPTH_TEST);
+  noStroke();
+  fill(125, 60, 0);
+  sphereDetail(50);
+  sphere(CORE_R);
+
+  blendMode(ADD);
+
+  // =========================
+  // RED PRINCIPAL (AZUL-ORO)
+  // =========================
+  for (int i = 0; i < points.size(); i++) {
+
+    PVector a = points.get(i);
+
+    for (int j = i + 1; j < points.size(); j++) {
+
+      PVector b = points.get(j);
+
+      float d = PVector.dist(a, b);
+      float threshold = 18 + energy * 25;
+
+      if (d < threshold) {
+
+        float alpha = map(d, 0, threshold, 180, 0);
+
+        stroke(255, 200 + energy * 55, 80, alpha);
+        strokeWeight(1.1);
+
+        line(a.x, a.y, a.z,
+             b.x, b.y, b.z);
+
+        // rayos externos
+        PVector mid = PVector.add(a, b);
+        mid.mult(0.5);
+
+        if (mid.mag() > CORE_R) {
+
+          PVector dir = mid.copy();
+          dir.normalize();
+
+          float spread = 6 + energy * 10;
+
+          PVector noiseDir = new PVector(
+            dir.x + random(-0.4, 0.4),
+            dir.y + random(-0.4, 0.4),
+            dir.z + random(-0.4, 0.4)
+          );
+          noiseDir.normalize();
+
+          PVector end = PVector.add(mid, PVector.mult(noiseDir, spread));
+
+          stroke(255, 255, 200 + energy * 55, alpha * 0.4);
+          strokeWeight(0.8);
+
+          line(mid.x, mid.y, mid.z,
+               end.x, end.y, end.z);
+        }
+      }
+    }
+  }
+
+  // =========================
+  // RED ROJA INTERNA
+  // =========================
+  for (int i = 0; i < redPoints.size(); i++) {
+
+    PVector a = redPoints.get(i);
+
+    for (int j = i + 1; j < redPoints.size(); j++) {
+
+      PVector b = redPoints.get(j);
+
+      float d = PVector.dist(a, b);
+      float threshold = 14 + energy * 18;
+
+      if (d < threshold) {
+
+        float alpha = map(d, 0, threshold, 140, 0);
+
+        stroke(255, 80, 60, alpha * 0.6);
+        strokeWeight(0.9);
+
+        line(a.x, a.y, a.z,
+             b.x, b.y, b.z);
+
+        // rayos rojos internos
+        PVector mid = PVector.add(a, b);
+        mid.mult(0.5);
+
+        if (mid.mag() > 100 && mid.mag() < CORE_R + 20) {
+
+          PVector dir = mid.copy();
+          dir.normalize();
+
+          float spread = 4 + energy * 8;
+
+          PVector noiseDir = new PVector(
+            dir.x + random(-0.6, 0.6),
+            dir.y + random(-0.6, 0.6),
+            dir.z + random(-0.6, 0.6)
+          );
+          noiseDir.normalize();
+
+          PVector end = PVector.add(mid, PVector.mult(noiseDir, spread));
+
+          stroke(255, 120, 80, alpha * 0.5);
+          strokeWeight(0.6);
+
+          line(mid.x, mid.y, mid.z,
+               end.x, end.y, end.z);
+        }
+      }
+    }
+  }
+
+  // =========================
+  // PARTÍCULAS
+  // =========================
+  for (PVector p : points) {
+
+    float n = noise(p.x*0.01, p.y*0.01, p.z*0.01 + frameCount*0.01);
+    float size = map(n, 0, 1, 1, 1 + energy * 4);
+
+    stroke(255, 240, 180, 60);
+    strokeWeight(size);
+
+    point(p.x, p.y, p.z);
+  }
+
+  blendMode(BLEND);
+}
+
+// =========================
+// MOVIMIENTO RED PRINCIPAL
+// =========================
+void updatePoints(float energy) {
+
+  for (int i = 0; i < NUM; i++) {
+
+    float t = frameCount * 0.01;
+
+    float n = noise(seedX[i]*2 + t,
+                    seedY[i]*2 + t,
+                    seedZ[i]*2 + t);
+
+    float offset = FIELD_R + map(n, 0, 1, -20, 20);
+
+    float jitter = 1.5 + energy * 2;
+
+    float x = seedX[i] * offset + random(-jitter, jitter);
+    float y = seedY[i] * offset + random(-jitter, jitter);
+    float z = seedZ[i] * offset + random(-jitter, jitter);
+
+    points.get(i).set(x, y, z);
+  }
+}
+
+// =========================
+// MOVIMIENTO RED ROJA
+// =========================
+void updateRedPoints(float energy) {
+
+  for (int i = 0; i < NUM; i++) {
+
+    float t = frameCount * 0.02;
+
+    float n = noise(seedRX[i]*2 + t,
+                    seedRY[i]*2 + t,
+                    seedRZ[i]*2 + t);
+
+    float offset = RED_R + map(n, 0, 1, -10, 10);
+
+    float jitter = 1.0 + energy * 1.5;
+
+    float x = seedRX[i] * offset + random(-jitter, jitter);
+    float y = seedRY[i] * offset + random(-jitter, jitter);
+    float z = seedRZ[i] * offset + random(-jitter, jitter);
+
+    redPoints.get(i).set(x, y, z);
+  }
+}
+
+// =========================
+// ZOOM
+// =========================
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  zoom += e * -0.05;
+  zoom = constrain(zoom, 0.4, 3.0);
+}
+
+// =========================
+// ESTRELLAS
+// =========================
+void drawStars() {
+  pushMatrix();
+  resetMatrix();
+
+  for (int i = 0; i < 60; i++) {
+    stroke(255, random(20, 120));
+    point(random(width), random(height));
+  }
+
+  popMatrix();
+}
