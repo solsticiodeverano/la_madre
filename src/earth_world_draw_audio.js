@@ -111,24 +111,26 @@ InstrumentEarth.prototype.drawMarkerOnGlobe = function(t, intro){
   const p = this.latLonToXYZ(
     this.markerLat,
     this.markerLon,
-    this.r + 8
+    this.r + 5
   );
 
   push();
-
   translate(p.x, p.y, p.z);
 
   noStroke();
   blendMode(ADD);
 
-  fill(255, 0, 0, 110 * intro);
-  sphere(12 + sin(t * 5) * 2, 16, 8);
+  // halo rojo más chico y menos transparente
+  const pulse = 1 + sin(t * 4.2) * 0.12;
 
-  fill(255, 0, 0, 255 * intro);
-  sphere(5, 12, 6);
+  fill(255, 0, 0, 165 * intro);
+  sphere(5.8 * pulse, 12, 8);
+
+  // núcleo
+  fill(255, 20, 20, 255 * intro);
+  sphere(2.4, 10, 6);
 
   blendMode(BLEND);
-
   pop();
 };
 
