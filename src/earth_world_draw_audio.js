@@ -1,21 +1,24 @@
+// Dibuja capas luminosas alrededor de la Tierra.
 InstrumentEarth.prototype.drawAtmosphere = function(intro){
   push();
 
   blendMode(ADD);
-
   noStroke();
 
+  // Capa azul cercana.
   fill(80,170,255,30 * intro);
   sphere(this.r * 1.018, 32, 16);
 
+  // Capa blanca exterior.
   fill(255,255,255,12 * intro);
   sphere(this.r * 1.055, 24, 12);
 
   blendMode(BLEND);
-
   pop();
 };
 
+
+// Dibuja nubes procedurales sobre la esfera usando noise().
 InstrumentEarth.prototype.drawClouds = function(t, intro){
   const radioNubes = this.r + 3;
   const detalle = 44;
@@ -23,6 +26,7 @@ InstrumentEarth.prototype.drawClouds = function(t, intro){
   noStroke();
   blendMode(ADD);
 
+  // Recorre la esfera por franjas de latitud.
   for(let i = 0; i < detalle; i++){
     const lat1 = map(i, 0, detalle, -HALF_PI, HALF_PI);
     const lat2 = map(i + 1, 0, detalle, -HALF_PI, HALF_PI);
@@ -32,6 +36,7 @@ InstrumentEarth.prototype.drawClouds = function(t, intro){
     for(let j = 0; j <= detalle; j++){
       const lon = map(j, 0, detalle, -PI, PI);
 
+      // Noise para densidad variable de nubes.
       const n1 = noise(
         cos(lon) * 2.5 + 10,
         sin(lon) * 2.5 + 20,
@@ -44,6 +49,7 @@ InstrumentEarth.prototype.drawClouds = function(t, intro){
         sin(lat2) * 3.0 + t * 0.35
       );
 
+      // Refuerza nubes cerca de los polos.
       const polo1 = abs(sin(lat1));
       const polo2 = abs(sin(lat2));
 
@@ -77,6 +83,9 @@ InstrumentEarth.prototype.drawClouds = function(t, intro){
   blendMode(BLEND);
 };
 
+
+// Marcador HUD centrado en pantalla.
+// Queda disponible, aunque el marcador actual se dibuja pegado al globo.
 InstrumentEarth.prototype.drawCenterMarkerHUD = function(t, intro){
   push();
 
@@ -107,6 +116,8 @@ InstrumentEarth.prototype.drawCenterMarkerHUD = function(t, intro){
   pop();
 };
 
+
+// Dibuja el punto rojo sobre la superficie real del globo.
 InstrumentEarth.prototype.drawMarkerOnGlobe = function(t, intro){
   const p = this.latLonToXYZ(
     this.markerLat,
@@ -120,13 +131,14 @@ InstrumentEarth.prototype.drawMarkerOnGlobe = function(t, intro){
   noStroke();
   blendMode(ADD);
 
-  // halo rojo más chico y menos transparente
+  // Pulso suave del marcador.
   const pulse = 1 + sin(t * 4.2) * 0.12;
 
+  // Halo rojo.
   fill(255, 0, 0, 165 * intro);
   sphere(5.8 * pulse, 12, 8);
 
-  // núcleo
+  // Núcleo rojo.
   fill(255, 20, 20, 255 * intro);
   sphere(2.4, 10, 6);
 
@@ -134,6 +146,8 @@ InstrumentEarth.prototype.drawMarkerOnGlobe = function(t, intro){
   pop();
 };
 
+
+// Escribe en el HUD la coordenada, país, región, zona y estado de audio.
 InstrumentEarth.prototype.drawHUD = function(intro){
   const el = document.getElementById('stageText');
 
@@ -148,6 +162,8 @@ InstrumentEarth.prototype.drawHUD = function(intro){
   }
 };
 
+
+// Dibuja mini interfaz de pads/estado sonoro en pantalla.
 InstrumentEarth.prototype.drawPadUI = function(){
   push();
 
@@ -165,6 +181,7 @@ InstrumentEarth.prototype.drawPadUI = function(){
   textSize(11);
   text(`${this.mode} ${floor(this.beat/4)}`, x - 8, y + s/2);
 
+  // Botones: kick, clap, música de zona y pad.
   this.padButton(x, y, s, this.kickOn || frameCount - this.markerPulse < 8, [255,140,0]);
   this.padButton(x + (s + gap), y, s, this.clapOn, [0,255,120]);
   this.padButton(x + (s + gap) * 2, y, s, this.mainOn, [255,220,90]);
@@ -173,6 +190,8 @@ InstrumentEarth.prototype.drawPadUI = function(){
   pop();
 };
 
+
+// Dibuja un botón cuadrado del pad.
 InstrumentEarth.prototype.padButton = function(x, y, s, on, c){
   if(on){
     noStroke();
@@ -189,6 +208,8 @@ InstrumentEarth.prototype.padButton = function(x, y, s, on, c){
   }
 };
 
+
+// Activa audio luego del click del usuario.
 InstrumentEarth.prototype.activateAudio = function(){
   if(this.audioReady) return;
 
@@ -197,6 +218,7 @@ InstrumentEarth.prototype.activateAudio = function(){
   this.audioReady = true;
   this.lastBeat = millis();
 
+  // Pad de fondo.
   const pad = this.assets.sounds && this.assets.sounds.pad;
 
   if(pad){
@@ -208,6 +230,8 @@ InstrumentEarth.prototype.activateAudio = function(){
   this.changeZoneSound(this.zone);
 };
 
+
+// Cambia la música principal según zona, con fade entre pistas.
 InstrumentEarth.prototype.changeZoneSound = function(zone){
   if(!this.audioReady || !this.mainOn) return;
 
@@ -215,7 +239,7 @@ InstrumentEarth.prototype.changeZoneSound = function(zone){
   if(!incoming || incoming === this.currentMain) return;
 
   const outgoing = this.currentMain;
-  const dur = 3.0; // segundos, como tu PDE viejo
+  const dur = 3.0;
 
   incoming.stop();
   incoming.setVolume(0);
@@ -235,6 +259,8 @@ InstrumentEarth.prototype.changeZoneSound = function(zone){
   this.currentMain = incoming;
 };
 
+
+// Devuelve el archivo sonoro correspondiente a cada zona.
 InstrumentEarth.prototype.mainSoundFor = function(zone){
   const snd = this.assets.sounds || {};
 
@@ -247,6 +273,9 @@ InstrumentEarth.prototype.mainSoundFor = function(zone){
   return snd.ocean;
 };
 
+
+// Reloj musical simple a BPM.
+// Dispara kick/clap cuando están activos.
 InstrumentEarth.prototype.updateAudioClock = function(){
   if(!this.audioReady) return;
 
@@ -268,6 +297,8 @@ InstrumentEarth.prototype.updateAudioClock = function(){
   }
 };
 
+
+// Dispara un sonido puntual y activa pulso visual del marcador.
 InstrumentEarth.prototype.trigger = function(name){
   const s = this.assets.sounds && this.assets.sounds[name];
 
@@ -280,6 +311,8 @@ InstrumentEarth.prototype.trigger = function(name){
   this.markerPulse = frameCount;
 };
 
+
+// Controles de teclado para modos y capas sonoras.
 InstrumentEarth.prototype.handleKey = function(k){
   if(k === 'l' || k === 'L'){
     this.mode = 'L';
@@ -302,6 +335,7 @@ InstrumentEarth.prototype.handleKey = function(k){
     this.activateAudio();
   }
 
+  // 1: kick automático o disparo manual según modo.
   if(k === '1'){
     if(this.mode === 'M'){
       this.trigger('kick');
@@ -310,6 +344,7 @@ InstrumentEarth.prototype.handleKey = function(k){
     }
   }
 
+  // 2: clap automático o disparo manual según modo.
   if(k === '2'){
     if(this.mode === 'M'){
       this.trigger('clap');
@@ -318,16 +353,19 @@ InstrumentEarth.prototype.handleKey = function(k){
     }
   }
 
+  // 3: prende/apaga música principal de zona.
   if(k === '3'){
     this.mainOn = !this.mainOn;
 
     if(!this.mainOn && this.currentMain){
       this.currentMain.stop();
     }else{
-this.currentMain = null;
-this.changeZoneSound(this.zone);    }
+      this.currentMain = null;
+      this.changeZoneSound(this.zone);
+    }
   }
 
+  // 4: prende/apaga pad.
   if(k === '4'){
     this.padOn = !this.padOn;
 

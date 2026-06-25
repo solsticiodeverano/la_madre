@@ -1,5 +1,7 @@
 let GALAXIES_CACHE = null;
 
+// Genera una sola vez un conjunto de galaxias pequeñas.
+// Se guarda en caché para no recalcular posiciones en cada frame.
 function initGalaxies(){
   GALAXIES_CACHE = [];
 
@@ -23,6 +25,8 @@ function initGalaxies(){
   randomSeed();
 }
 
+// Dibuja el campo de galaxias.
+// t es el tiempo y a controla la opacidad/fade de la escena.
 function drawGalaxies(t, a){
   if(!GALAXIES_CACHE){
     initGalaxies();
@@ -33,12 +37,13 @@ function drawGalaxies(t, a){
   for(const g of GALAXIES_CACHE){
     push();
 
+    // Posición y orientación propia de cada galaxia.
     translate(g.x, g.y, g.z);
     rotateX(g.tiltX);
     rotateY(g.tiltY);
     rotateZ(g.rot + t * g.speed * 8);
 
-    // brazos espirales de puntos, como el Processing viejo
+    // Brazos espirales formados por puntos.
     for(let arm = 0; arm < g.arms; arm++){
       const armOffset = TWO_PI / g.arms * arm;
 
@@ -51,6 +56,7 @@ function drawGalaxies(t, a){
         const y = sin(angle * 2.0) * 2.2;
         const z = sin(angle) * radius;
 
+        // Los puntos se apagan hacia el borde del brazo.
         const alpha = map(q, 0, 1, 145, 0) * a;
         const sw = map(q, 0, 1, 1.45, .45);
 
@@ -60,12 +66,12 @@ function drawGalaxies(t, a){
       }
     }
 
-    // núcleo cálido
+    // Núcleo cálido central.
     noStroke();
     fill(255, 235, 200, 150 * a);
     sphere(g.size * .10, 8, 6);
 
-    // halo azul suave
+    // Halo azul externo.
     fill(120, 170, 255, 18 * a);
     sphere(g.size * .42, 8, 6);
 

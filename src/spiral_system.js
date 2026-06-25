@@ -1,6 +1,6 @@
 // =====================================================
-// SPIRAL SYSTEM — movimiento AlexClase + estética suave
-// versión optimizada
+// SPIRAL SYSTEM
+// Sistema solar 3D con órbitas, rastros y foco progresivo en la Tierra.
 // =====================================================
 
 class SpiralSystem{
@@ -8,11 +8,15 @@ class SpiralSystem{
     this.t = 0;
     this.sunSize = 72;
 
+    // Radios de órbita en X y Z para cada planeta.
     this.a = [120, 175, 245, 320, 445, 585, 725, 860];
     this.b = [100, 150, 225, 285, 410, 535, 675, 810];
+
+    // Tamaños relativos y velocidades orbitales.
     this.sizes = [0.03, 0.07, 0.08, 0.04, 0.22, 0.18, 0.12, 0.11];
     this.speeds = [4.0, 3.2, 2.4, 1.9, 1.2, 0.9, 0.6, 0.4];
 
+    // Color de cada planeta.
     this.cols = [
       [170, 180, 190],
       [230, 170, 95],
@@ -24,12 +28,14 @@ class SpiralSystem{
       [90, 130, 255]
     ];
 
+    // Rastros de movimiento.
     this.trailSol = [];
     this.planetTrails = Array.from({length:8}, () => []);
 
     this.maxSunTrail = 220;
     this.maxPlanetTrail = 95;
 
+    // Campo de estrellas de fondo.
     this.stars = [];
 
     randomSeed(2);
@@ -47,6 +53,7 @@ class SpiralSystem{
   }
 
   draw(externalT, focusEarth = 0){
+    // Tiempo interno limitado para evitar saltos si baja el framerate.
     this.t += min(deltaTime || 16.6, 33) * 0.00055;
 
     const tt = this.t;
@@ -54,32 +61,39 @@ class SpiralSystem{
 
     push();
 
+    // Escala y rotación general del sistema.
     scale(0.62);
     rotateX(0.43);
     rotateY(externalT * 0.05);
 
     this.drawStars(tt);
 
+    // Movimiento del sol en una trayectoria espiral/descendente.
     const sunX = cos(tt) * 120;
     const sunZ = sin(tt) * 120;
     const sunY = -tt * 95;
 
+    // Calcula posición de la Tierra para poder enfocar la cámara hacia ella.
     const earth = this.planetPosition(2, sunX, sunY, sunZ, tt);
 
+    // Transición de cámara: del Sol a la Tierra.
     translate(
       -lerp(sunX, earth.x, focusEarth),
       -lerp(sunY, earth.y, focusEarth),
       -lerp(sunZ, earth.z, focusEarth)
     );
 
+    // Zoom progresivo al enfocar la Tierra.
     scale(lerp(1.0, 4.2, focusEarth));
 
+    // Rastro del sol.
     this.trailSol.push(createVector(sunX, sunY, sunZ));
     if(this.trailSol.length > this.maxSunTrail) this.trailSol.shift();
 
     this.drawTrailSimple(this.trailSol, [255, 205, 110], 1.6);
     this.drawSun(sunX, sunY, sunZ, tt);
 
+    // Dibuja los ocho planetas.
     for(let i = 0; i < 8; i++){
       this.drawPlanet(i, sunX, sunY, sunZ, tt);
     }
@@ -87,6 +101,7 @@ class SpiralSystem{
     pop();
   }
 
+  // Devuelve la posición orbital de cada planeta.
   planetPosition(i, sunX, sunY, sunZ, tt){
     const angle = tt * this.speeds[i];
 
@@ -97,6 +112,7 @@ class SpiralSystem{
     );
   }
 
+  // Dibuja el sol. Si existe window.sun, usa la versión de red.
   drawSun(sunX, sunY, sunZ, tt){
     push();
     translate(sunX, sunY, sunZ);
@@ -108,9 +124,11 @@ class SpiralSystem{
     }else{
       noStroke();
 
+      // Núcleo solar.
       fill(255, 175, 65, 225);
       sphere(this.sunSize, 20, 12);
 
+      // Halos luminosos.
       blendMode(ADD);
       fill(255, 120, 35, 24);
       sphere(this.sunSize * 1.45, 12, 8);
@@ -123,6 +141,7 @@ class SpiralSystem{
     pop();
   }
 
+  // Dibuja un planeta, su rastro, aura y anillos si corresponde.
   drawPlanet(i, sunX, sunY, sunZ, tt){
     const pos = this.planetPosition(i, sunX, sunY, sunZ, tt);
 
@@ -144,7 +163,7 @@ class SpiralSystem{
     fill(c[0], c[1], c[2], 225);
     sphere(pr, 12, 8);
 
-    // Aura solo en planetas grandes y Tierra, no todos
+    // Aura en Tierra y planetas grandes.
     if(i === 2 || i === 4 || i === 5){
       blendMode(ADD);
       fill(c[0], c[1], c[2], 22);
@@ -152,6 +171,7 @@ class SpiralSystem{
       blendMode(BLEND);
     }
 
+    // Aura especial para la Tierra.
     if(i === 2){
       blendMode(ADD);
       fill(80, 180, 255, 42);
@@ -159,6 +179,7 @@ class SpiralSystem{
       blendMode(BLEND);
     }
 
+    // Anillos para planetas exteriores.
     if(i === 5 || i === 6 || i === 7){
       this.drawRing(pr);
     }
@@ -166,6 +187,7 @@ class SpiralSystem{
     pop();
   }
 
+  // Dibuja anillos planetarios.
   drawRing(r){
     push();
     rotateX(radians(70));
@@ -182,6 +204,7 @@ class SpiralSystem{
     pop();
   }
 
+  // Rastro luminoso de cada planeta.
   drawPlanetTrail(i){
     const tr = this.planetTrails[i];
     const c = this.cols[i];
@@ -203,6 +226,7 @@ class SpiralSystem{
     }
   }
 
+  // Rastro simple usado para el movimiento del sol.
   drawTrailSimple(tr, c, w){
     for(let i = 1; i < tr.length; i += 2){
       const p1 = tr[i - 1];
@@ -214,6 +238,7 @@ class SpiralSystem{
     }
   }
 
+  // Estrellas de fondo con parpadeo suave.
   drawStars(t){
     push();
     blendMode(ADD);

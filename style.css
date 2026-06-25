@@ -1,1 +1,124 @@
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#010105;color:#ffe9bf;font-family:Inter,Arial,sans-serif}canvas{display:block}#ui{position:fixed;left:28px;bottom:24px;width:min(520px,calc(100vw - 56px));pointer-events:none;text-shadow:0 0 18px #000}.kicker{font-size:12px;letter-spacing:.22em;color:#ff6b3d;margin-bottom:6px}h1{margin:0;font-size:54px;line-height:.9;font-weight:900;letter-spacing:-.05em}p{margin:12px 0 14px;font-size:17px;color:#fff1d6}.bar{height:4px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden}.bar div{height:100%;width:0;background:linear-gradient(90deg,#ff3d1f,#ffd06a,#8bd3ff);box-shadow:0 0 18px #ff7a2a}.controls{margin-top:10px;font-size:12px;color:rgba(255,255,255,.58)}
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #010105;
+  color: #d8fff4;
+  font-family: "Courier New", monospace;
+}
+
+canvas {
+  display: block;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+/* ===== HUD inferior ===== */
+#ui {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 18px 12px;
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: 20;
+
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.58) 28%, rgba(0,0,0,.78) 100%);
+  border-top: 1px solid rgba(0, 255, 166, .18);
+}
+
+/* grilla muy suave */
+#ui::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: .18;
+}
+
+.kicker {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 4px;
+  color: #00e6a0;
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(0, 255, 166, .45);
+}
+
+h1 {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 4px;
+  color: #d8fff4;
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px rgba(0, 255, 166, .35),
+    0 0 18px rgba(0, 140, 255, .18);
+}
+
+#stageText {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 8px;
+  max-width: min(820px, 92vw);
+  color: rgba(226, 255, 247, .78);
+  font-size: 11px;
+  line-height: 1.35;
+  letter-spacing: .015em;
+}
+
+/* barra más fina */
+.bar {
+  position: relative;
+  z-index: 1;
+  height: 4px;
+  margin: 0 0 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(0, 255, 166, .18);
+}
+
+.bar div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(
+    90deg,
+    #ff1e1e 0%,
+    #ff7a18 20%,
+    #ffd84a 40%,
+    #00ffa6 62%,
+    #00b7ff 82%,
+    #305bff 100%
+  );
+  box-shadow:
+    0 0 10px rgba(255, 80, 40, .55),
+    0 0 18px rgba(0, 183, 255, .35);
+}
+
+.controls {
+  position: relative;
+  z-index: 1;
+  color: rgba(216, 255, 244, .48);
+  font-size: 9px;
+  line-height: 1.35;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}

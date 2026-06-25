@@ -42,7 +42,7 @@ let py = 0;
 // ============================================================
 // En lugar de una sola etiqueta por escena, cada etapa tiene
 // varias frases. Se puede mostrar una u otra según el tiempo
-// para darle un tono más mítico, poético y cosmogónico.
+// para darle un tono más poético y cosmogónico.
 //
 // Etapas:
 // 0 = Pre Big Bang / Kaos
@@ -381,18 +381,6 @@ function drawStarfield(t) {
 }
 
 
-
-// ============================================================
-// tintAlpha(a)
-// ============================================================
-// Función reservada para futuras variaciones de transparencia.
-// Por ahora queda vacía.
-// ============================================================
-
-function tintAlpha(a) {}
-
-
-
 // ============================================================
 // mouseWheel(e)
 // ============================================================
@@ -449,41 +437,16 @@ function keyPressed() {
   }
 }
 
-
-
-// ============================================================
-// mousePressed()
-// ============================================================
-// Delegación del click a la escena Tierra.
-// Sirve, por ejemplo, para activar audio o interacción interna.
-// ============================================================
-
 function mousePressed() {
   if (earth) {
     earth.handleClick();
   }
 }
 
-
-
-// ============================================================
-// mouseReleased()
-// ============================================================
-// Cierra el estado de arrastre del mouse.
-// ============================================================
-
 function mouseReleased() {
   dragging = false;
 }
 
-
-
-// ============================================================
-// mouseDragged()
-// ============================================================
-// Envía el desplazamiento del mouse a la escena Tierra,
-// que puede usarlo para rotar, mover o alterar la interfaz.
-// ============================================================
 
 function mouseDragged() {
   if (earth) {

@@ -1,5 +1,0 @@
-LA MADRE es el primer anillo de Telépata: un viaje generativo desde el Big Bang hasta la aparición de la Tierra como matriz de culturas. La pieza retoma bocetos previos hechos en Processing —big_bang, universi, sol y tierra— y los reorganiza como una web en p5.js dividida en escenas de zoom para que cada escala exista por capas y no como una sola simulación pesada.
-
-La obra usa transformaciones 3D con push/pop, rotaciones y escalas; movimiento polar con sin/cos para galaxias, órbitas y partículas; noise para respiración, brillo y deriva; ArrayLists/arreglos de objetos para polvo cósmico, red solar, sistema planetario y nodos culturales. El recorrido propone pasar de una energía sin forma a una red de lugares, relatos y culturas: la materia como archivo y la Tierra como madre.
-
-Controles: scroll o flechas para avanzar/retroceder, drag para rotar, teclas 1 a 5 para saltar escenas y S para guardar captura.
