@@ -18,15 +18,24 @@ function preload(){
 }
 
 function setup(){
-  const c=createCanvas(windowWidth,windowHeight,WEBGL); c.parent('app'); pixelDensity(1); smooth();
-  dust=new CosmicDust(900,760); sun=new NetworkSun(220); system=new SpiralSystem();
+  const c=createCanvas(windowWidth,windowHeight,WEBGL); 
+  c.parent('app'); 
+  pixelDensity(1); 
+  smooth();
+  textFont('Arial');
+
+  dust=new CosmicDust(900,760); 
+  sun=new NetworkSun(220); 
+  system=new SpiralSystem();
   earth = (typeof InstrumentEarth === 'function') ? new InstrumentEarth(earthAssets) : new EarthCultures();
 }
 function draw(){
   background(1,1,8); let t=millis()/1000; travel=lerp(travel,targetTravel,.045);
   document.getElementById('progress').style.width=(travel*100).toFixed(1)+'%';
-  let stage=floor(constrain(travel*5,0,4.999)); screenText(labels[stage]);
-  orbitControlLight(); rotateX(rx); rotateY(ry+t*.025);
+  let stage=floor(constrain(travel*5,0,4.999)); if(!(earth && stage === 4)){
+  screenText(labels[stage]);
+}
+  orbitControlLight(); rotateX(rx); rotateY(ry);
   let z=map(travel,0,1,900,-120); scale(map(travel,0,1,.55,1.25));
   push(); translate(0,0,z); drawStarfield(t); pop();
   let a0=1-softStep(.14,.28,travel); if(a0>0){push(); scale(1+travel*5); tintAlpha(a0); dust.draw(t,1+travel*7); pop();}
@@ -55,6 +64,29 @@ function drawGalaxies(t,a){blendMode(ADD); noFill(); for(let g=0;g<28;g++){push(
 function drawMilkyWay(t,a){blendMode(ADD); rotateX(1.08); for(let arm=0;arm<4;arm++){stroke(255,210,150,45*a); noFill(); beginShape(); for(let i=0;i<430;i++){let ang=i*.045+arm*HALF_PI+t*.045; let r=8+i*.85; vertex(cos(ang)*r,sin(ang)*r,sin(i*.05+t)*22);} endShape();} fill(255,220,120,150*a); noStroke(); sphere(22); blendMode(BLEND);}
 function tintAlpha(a){}
 function mouseWheel(e){targetTravel=constrain(targetTravel+e.delta*.00045,0,1); return false;}
-function keyPressed(){if(key>='1'&&key<='5')targetTravel=(int(key)-1)/4; if(keyCode===DOWN_ARROW)targetTravel=constrain(targetTravel+.08,0,1); if(keyCode===UP_ARROW)targetTravel=constrain(targetTravel-.08,0,1); if(key==='s'||key==='S')saveCanvas('LA_MADRE_captura','png'); if(earth) earth.handleKey(key);}
-function mousePressed(){dragging=true; px=mouseX; py=mouseY; if(earth) earth.activateAudio();} function mouseReleased(){dragging=false;} function mouseDragged(){if(dragging){ry+=(mouseX-px)*.006; rx+=(mouseY-py)*.006; px=mouseX; py=mouseY;}}
+
+function keyPressed(){
+  if(key>='1'&&key<='5') targetTravel=(int(key)-1)/4;
+  if(keyCode===DOWN_ARROW) targetTravel=constrain(targetTravel+.08,0,1);
+  if(keyCode===UP_ARROW) targetTravel=constrain(targetTravel-.08,0,1);
+  if(key==='s'||key==='S') saveCanvas('LA_MADRE_captura','png');
+  if(earth) earth.handleKey(key);
+}
+
+function mousePressed(){
+  if(earth){
+    earth.handleClick();
+  }
+}
+
+function mouseReleased(){
+  dragging = false;
+}
+
+function mouseDragged(){
+  if(earth){
+    earth.handleDrag(mouseX - pmouseX, mouseY - pmouseY);
+  }
+}
+
 function windowResized(){resizeCanvas(windowWidth,windowHeight)}
