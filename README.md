@@ -70,10 +70,10 @@ La obra se organiza en cinco escenas encadenadas:
    La materia se expande, se enfría y aparecen polvo, filamentos y galaxias.
 
 3. **Galaxia**  
-   El recorrido entra en una espiral luminosa, como una memoria cósmica en movimiento.
+  Las galaxias como concentración de movimientos espiralados.
 
 4. **Sistema solar**  
-   La Tierra orbita alrededor del sol y la cámara empieza a aproximarse al planeta.
+   El sol gira y se traslada mientras todo el sistema gira entorno a esa estrella.
 
 5. **Tierra / La Madre**  
    La escala se vuelve planetaria: aparecen zonas, geografía, territorios, capas sonoras y relaciones entre superficie, cultura y desplazamiento.
